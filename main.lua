@@ -1,3 +1,4 @@
+print("Zeno Hub iniciou")
 local Player = game.Players.LocalPlayer
 local PlayerGui = Player:WaitForChild("PlayerGui")
 local UserInputService = game:GetService("UserInputService")
