@@ -1,12 +1,12 @@
-print("Zeno Hub iniciou")
 local Player = game.Players.LocalPlayer
 local PlayerGui = Player:WaitForChild("PlayerGui")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local VirtualUser = game:GetService("VirtualUser")
 
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "PhantomHub_V1"
+ScreenGui.Name = "ZenoHub_V1"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = PlayerGui
 
@@ -73,7 +73,7 @@ TopCorner.Parent = TopBar
 local ScriptTitle = Instance.new("TextLabel")
 ScriptTitle.Size = UDim2.new(0, 150, 1, 0)
 ScriptTitle.Position = UDim2.new(0, 10, 0, 0)
-ScriptTitle.Text = "Zeno Hub"
+ScriptTitle.Text = "Phantom Hub"
 ScriptTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
 ScriptTitle.Font = Enum.Font.SourceSansBold
 ScriptTitle.TextSize = 22
@@ -106,122 +106,198 @@ MainContent.Size = UDim2.new(1, -145, 1, -55)
 MainContent.Position = UDim2.new(0, 145, 0, 50)
 MainContent.BackgroundTransparency = 1
 MainContent.ScrollBarThickness = 2
-MainContent.CanvasSize = UDim2.new(0, 0, 0, 510)
+MainContent.CanvasSize = UDim2.new(0, 0, 0, 800)
 MainContent.Parent = InnerFrame
 
-local function createTabBtn(name, posIdx)
-local Btn = Instance.new("TextButton")
-Btn.Size = UDim2.new(0.85, 0, 0, 40)
-Btn.Position = UDim2.new(0.075, 0, 0, 20 + (posIdx * 50))
-Btn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-Btn.Text = name
-Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-Btn.Font = Enum.Font.SourceSansBold
-Btn.TextSize = 18
-Btn.Parent = SideBar
-Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 8)
-return Btn
+local function createTabBtn(name, posIdx, isWhiteMode)
+    local Btn = Instance.new("TextButton")
+    Btn.Size = UDim2.new(0.85, 0, 0, 40)
+    Btn.Position = UDim2.new(0.075, 0, 0, 20 + (posIdx * 50))
+    if isWhiteMode then
+        Btn.BackgroundColor3 = Color3.fromRGB(150, 150, 150)
+        Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    else
+        Btn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+        Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    end
+    Btn.Text = name
+    Btn.Font = Enum.Font.SourceSansBold
+    Btn.TextSize = 18
+    Btn.Parent = SideBar
+    Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 8)
+    return Btn
 end
 
 local TabMain = createTabBtn("Main", 0)
 local TabBuy = createTabBtn("Buy ALL", 1)
 local TabFarm = createTabBtn("Farm", 2)
-local TabCredits = createTabBtn("Credits", 3)
+local TabConfig = createTabBtn("Config", 3)
+local TabCredits = createTabBtn("Credits", 4)
 
-local options = {Main = {}, Buy = {}, Farm = {}, Credits = {}}
+local options = {Main = {}, Buy = {}, Farm = {}, Config = {}, Credits = {}}
 
 local function createOption(name, posIdx, startActive, tab, callback)
-local Container = Instance.new("Frame")
-Container.Size = UDim2.new(0.95, 0, 0, 50)
-Container.Position = UDim2.new(0, 0, 0, posIdx * 60)
-Container.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-Container.Visible = (tab == "Main")
-Container.Parent = MainContent
-Instance.new("UICorner", Container).CornerRadius = UDim.new(0, 10)
+    local Container = Instance.new("Frame")
+    Container.Size = UDim2.new(0.95, 0, 0, 50)
+    Container.Position = UDim2.new(0, 0, 0, posIdx * 60)
+    Container.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    Container.Visible = (tab == "Main")
+    Container.Parent = MainContent
+    Instance.new("UICorner", Container).CornerRadius = UDim.new(0, 10)
 
-local Label = Instance.new("TextLabel")  
-Label.Size = UDim2.new(0.6, 0, 1, 0)  
-Label.Position = UDim2.new(0.05, 0, 0, 0)  
-Label.Text = name  
-Label.TextColor3 = Color3.fromRGB(255, 255, 255)  
-Label.BackgroundTransparency = 1  
-Label.TextXAlignment = Enum.TextXAlignment.Left  
-Label.Font = Enum.Font.SourceSans  
-Label.TextSize = 16  
-Label.Parent = Container  
+    local Label = Instance.new("TextLabel")
+    Label.Size = UDim2.new(0.6, 0, 1, 0)
+    Label.Position = UDim2.new(0.05, 0, 0, 0)
+    Label.Text = name
+    Label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Label.BackgroundTransparency = 1
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    Label.Font = Enum.Font.SourceSans
+    Label.TextSize = 16
+    Label.Parent = Container
 
-local SwitchBG = Instance.new("TextButton")  
-SwitchBG.Size = UDim2.new(0, 45, 0, 24)  
-SwitchBG.Position = UDim2.new(1, -55, 0.5, -12)  
-SwitchBG.BackgroundColor3 = startActive and Color3.fromRGB(150, 150, 150) or Color3.fromRGB(40, 40, 40)  
-SwitchBG.Text = ""  
-SwitchBG.Parent = Container  
-Instance.new("UICorner", SwitchBG).CornerRadius = UDim.new(1, 0)  
+    local SwitchBG = Instance.new("TextButton")
+    SwitchBG.Size = UDim2.new(0, 45, 0, 24)
+    SwitchBG.Position = UDim2.new(1, -55, 0.5, -12)
+    SwitchBG.BackgroundColor3 = startActive and Color3.fromRGB(150, 150, 150) or Color3.fromRGB(40, 40, 40)
+    SwitchBG.Text = ""
+    SwitchBG.Parent = Container
+    Instance.new("UICorner", SwitchBG).CornerRadius = UDim.new(1, 0)
 
-local Circle = Instance.new("Frame")  
-Circle.Size = UDim2.new(0, 18, 0, 18)  
-Circle.Position = startActive and UDim2.new(1, -21, 0.5, -9) or UDim2.new(0, 3, 0.5, -9)  
-Circle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)  
-Circle.Parent = SwitchBG  
-Instance.new("UICorner", Circle).CornerRadius = UDim.new(1, 0)  
+    local Circle = Instance.new("Frame")
+    Circle.Size = UDim2.new(0, 18, 0, 18)
+    Circle.Position = startActive and UDim2.new(1, -21, 0.5, -9) or UDim2.new(0, 3, 0.5, -9)
+    Circle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Circle.Parent = SwitchBG
+    Instance.new("UICorner", Circle).CornerRadius = UDim.new(1, 0)
 
-local active = startActive  
-SwitchBG.MouseButton1Click:Connect(function()  
-    active = not active  
-    Circle:TweenPosition(active and UDim2.new(1, -21, 0.5, -9) or UDim2.new(0, 3, 0.5, -9), "Out", "Quad", 0.2, true)  
-    SwitchBG.BackgroundColor3 = active and Color3.fromRGB(150, 150, 150) or Color3.fromRGB(40, 40, 40)  
-    if callback then callback(active) end  
-end)  
+    local active = startActive
+    SwitchBG.MouseButton1Click:Connect(function()
+        active = not active
+        Circle:TweenPosition(active and UDim2.new(1, -21, 0.5, -9) or UDim2.new(0, 3, 0.5, -9), "Out", "Quad", 0.2, true)
+        SwitchBG.BackgroundColor3 = active and Color3.fromRGB(150, 150, 150) or Color3.fromRGB(40, 40, 40)
+        if callback then callback(active) end
+    end)
 
-table.insert(options[tab], Container)  
-return function() return active end
+    table.insert(options[tab], Container)
+    return function() return active end
+end
 
+local function createSlider(name, min, max, default, posIdx, tab, callback)
+    local Container = Instance.new("Frame")
+    Container.Size = UDim2.new(0.95, 0, 0, 60)
+    Container.Position = UDim2.new(0, 0, 0, posIdx * 60)
+    Container.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    Container.Visible = false
+    Container.Parent = MainContent
+    Instance.new("UICorner", Container).CornerRadius = UDim.new(0, 10)
+
+    local Label = Instance.new("TextLabel")
+    Label.Size = UDim2.new(0.9, 0, 0.4, 0)
+    Label.Position = UDim2.new(0.05, 0, 0, 5)
+    Label.Text = name .. ": " .. tostring(default)
+    Label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Label.BackgroundTransparency = 1
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    Label.Font = Enum.Font.SourceSans
+    Label.TextSize = 16
+    Label.Parent = Container
+
+    local SliderBG = Instance.new("TextButton")
+    SliderBG.Size = UDim2.new(0.9, 0, 0, 6)
+    SliderBG.Position = UDim2.new(0.05, 0, 0.65, 0)
+    SliderBG.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    SliderBG.Text = ""
+    SliderBG.Parent = Container
+    Instance.new("UICorner", SliderBG).CornerRadius = UDim.new(1, 0)
+
+    local SliderFill = Instance.new("Frame")
+    local startScale = (default - min) / (max - min)
+    SliderFill.Size = UDim2.new(startScale, 0, 1, 0)
+    SliderFill.BackgroundColor3 = Color3.fromRGB(150, 150, 150)
+    SliderFill.Parent = SliderBG
+    Instance.new("UICorner", SliderFill).CornerRadius = UDim.new(1, 0)
+
+    local Circle = Instance.new("Frame")
+    Circle.Size = UDim2.new(0, 14, 0, 14)
+    Circle.Position = UDim2.new(1, -7, 0.5, -7)
+    Circle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Circle.Parent = SliderFill
+    Instance.new("UICorner", Circle).CornerRadius = UDim.new(1, 0)
+
+    local dragging = false
+    local function updateSlider(input)
+        local relativeX = math.clamp(input.Position.X - SliderBG.AbsolutePosition.X, 0, SliderBG.AbsoluteSize.X)
+        local scale = relativeX / SliderBG.AbsoluteSize.X
+        SliderFill.Size = UDim2.new(scale, 0, 1, 0)
+        local value = math.floor(min + ((max - min) * scale))
+        Label.Text = name .. ": " .. tostring(value)
+        if callback then callback(value) end
+    end
+
+    SliderBG.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            updateSlider(input)
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            updateSlider(input)
+        end
+    end)
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+        end
+    end)
+
+    table.insert(options[tab], Container)
 end
 
 local function createInfoBox(title, desc, posIdx, tab, isButton, linkToCopy)
-local Container = Instance.new("Frame")
-Container.Size = UDim2.new(0.95, 0, 0, 50)
-Container.Position = UDim2.new(0, 0, 0, posIdx * 60)
-Container.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-Container.Visible = false
-Container.Parent = MainContent
-Instance.new("UICorner", Container).CornerRadius = UDim.new(0, 10)
+    local Container = Instance.new("Frame")
+    Container.Size = UDim2.new(0.95, 0, 0, 50)
+    Container.Position = UDim2.new(0, 0, 0, posIdx * 60)
+    Container.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    Container.Visible = false
+    Container.Parent = MainContent
+    Instance.new("UICorner", Container).CornerRadius = UDim.new(0, 10)
 
-local TitleLabel = Instance.new("TextLabel")  
-TitleLabel.Size = UDim2.new(0.9, 0, 0.5, 0)  
-TitleLabel.Position = UDim2.new(0.05, 0, 0, 5)  
-TitleLabel.Text = title  
-TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)  
-TitleLabel.BackgroundTransparency = 1  
-TitleLabel.TextXAlignment = Enum.TextXAlignment.Left  
-TitleLabel.Font = Enum.Font.SourceSansBold  
-TitleLabel.TextSize = 16  
-TitleLabel.Parent = Container  
+    local TitleLabel = Instance.new("TextLabel")
+    TitleLabel.Size = UDim2.new(0.9, 0, 0.5, 0)
+    TitleLabel.Position = UDim2.new(0.05, 0, 0, 5)
+    TitleLabel.Text = title
+    TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    TitleLabel.BackgroundTransparency = 1
+    TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    TitleLabel.Font = Enum.Font.SourceSansBold
+    TitleLabel.TextSize = 16
+    TitleLabel.Parent = Container
 
-local DescLabel = Instance.new("TextLabel")  
-DescLabel.Size = UDim2.new(0.9, 0, 0.5, 0)  
-DescLabel.Position = UDim2.new(0.05, 0, 0.5, -2)  
-DescLabel.Text = desc  
-DescLabel.TextColor3 = Color3.fromRGB(200, 200, 200)  
-DescLabel.BackgroundTransparency = 1  
-DescLabel.TextXAlignment = Enum.TextXAlignment.Left  
-DescLabel.Font = Enum.Font.SourceSans  
-DescLabel.TextSize = 14  
-DescLabel.Parent = Container  
+    local DescLabel = Instance.new("TextLabel")
+    DescLabel.Size = UDim2.new(0.9, 0, 0.5, 0)
+    DescLabel.Position = UDim2.new(0.05, 0, 0.5, -2)
+    DescLabel.Text = desc
+    DescLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+    DescLabel.BackgroundTransparency = 1
+    DescLabel.TextXAlignment = Enum.TextXAlignment.Left
+    DescLabel.Font = Enum.Font.SourceSans
+    DescLabel.TextSize = 14
+    DescLabel.Parent = Container
 
-if isButton then  
-    local ClickBtn = Instance.new("TextButton")  
-    ClickBtn.Size = UDim2.new(1, 0, 1, 0)  
-    ClickBtn.BackgroundTransparency = 1  
-    ClickBtn.Text = ""  
-    ClickBtn.Parent = Container  
-    ClickBtn.MouseButton1Click:Connect(function()  
-        if setclipboard then setclipboard(linkToCopy) end  
-    end)  
-end  
+    if isButton then
+        local ClickBtn = Instance.new("TextButton")
+        ClickBtn.Size = UDim2.new(1, 0, 1, 0)
+        ClickBtn.BackgroundTransparency = 1
+        ClickBtn.Text = ""
+        ClickBtn.Parent = Container
+        ClickBtn.MouseButton1Click:Connect(function()
+            if setclipboard then setclipboard(linkToCopy) end
+        end)
+    end
 
-table.insert(options[tab], Container)
-
+    table.insert(options[tab], Container)
 end
 
 local isAutoRebirth = createOption("Auto Rebirth", 0, false, "Main")
@@ -231,19 +307,19 @@ local isPlayerESP = createOption("Player ESP (Red Aura)", 3, false, "Main")
 
 local originalMaterials = {}
 local isLowMode = createOption("Low Mode", 4, false, "Main", function(active)
-if active then
-for _, v in pairs(workspace:GetDescendants()) do
-if v:IsA("BasePart") and (v.Name == "Part" or v.Name == "Floor") then
-originalMaterials[v] = v.Material
-v.Material = Enum.Material.Air
-end
-end
-else
-for part, mat in pairs(originalMaterials) do
-if part and part.Parent then part.Material = mat end
-end
-originalMaterials = {}
-end
+    if active then
+        for _, v in pairs(workspace:GetDescendants()) do
+            if v:IsA("BasePart") and (v.Name == "Part" or v.Name == "Floor") then
+                originalMaterials[v] = v.Material
+                v.Material = Enum.Material.Air
+            end
+        end
+    else
+        for part, mat in pairs(originalMaterials) do
+            if part and part.Parent then part.Material = mat end
+        end
+        originalMaterials = {}
+    end
 end)
 
 local isInstantBrainrot = createOption("Instant Collect Brainrots", 5, true, "Main")
@@ -255,252 +331,158 @@ local buyStar = createOption("Auto Star", 2, false, "Buy")
 local buyFlow = createOption("Auto Flower", 3, false, "Buy")
 local buyPhon = createOption("Auto Phone", 4, false, "Buy")
 
-local isAutoMystic = createOption("Auto Mystic", 0, false, "Farm")
-local isAutoSecret = createOption("Auto Secret", 1, false, "Farm")
-local isAutoStellar = createOption("Auto Stellar", 2, false, "Farm")
+local isAutoEpic = createOption("Auto Epic", 0, false, "Farm")
+local isAutoLegendary = createOption("Auto Legendary", 1, false, "Farm")
+local isAutoMystic = createOption("Auto Mystic", 2, false, "Farm")
+local isAutoSecret = createOption("Auto Secret", 3, false, "Farm")
+local isAutoStellar = createOption("Auto Stellar", 4, false, "Farm")
 
-createInfoBox("By: morbex", "Script created by morbex.", 0, "Credits", false)
+local RebirthContainer = Instance.new("Frame")
+RebirthContainer.Size = UDim2.new(0.95, 0, 0, 50)
+RebirthContainer.Position = UDim2.new(0, 0, 0, 300)
+RebirthContainer.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+RebirthContainer.Visible = false
+RebirthContainer.Parent = MainContent
+Instance.new("UICorner", RebirthContainer).CornerRadius = UDim.new(0, 10)
+
+local RebirthLabelBtn = Instance.new("TextButton")
+RebirthLabelBtn.Size = UDim2.new(0.6, 0, 1, 0)
+RebirthLabelBtn.Position = UDim2.new(0.05, 0, 0, 0)
+RebirthLabelBtn.Text = "Rebirth Auto Brainrots: Select"
+RebirthLabelBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+RebirthLabelBtn.BackgroundTransparency = 1
+RebirthLabelBtn.TextXAlignment = Enum.TextXAlignment.Left
+RebirthLabelBtn.Font = Enum.Font.SourceSans
+RebirthLabelBtn.TextSize = 16
+RebirthLabelBtn.Parent = RebirthContainer
+
+local RebirthSwitchBG = Instance.new("TextButton")
+RebirthSwitchBG.Size = UDim2.new(0, 45, 0, 24)
+RebirthSwitchBG.Position = UDim2.new(1, -55, 0.5, -12)
+RebirthSwitchBG.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+RebirthSwitchBG.Text = ""
+RebirthSwitchBG.Parent = RebirthContainer
+Instance.new("UICorner", RebirthSwitchBG).CornerRadius = UDim.new(1, 0)
+
+local RebirthCircle = Instance.new("Frame")
+RebirthCircle.Size = UDim2.new(0, 18, 0, 18)
+RebirthCircle.Position = UDim2.new(0, 3, 0.5, -9)
+RebirthCircle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+RebirthCircle.Parent = RebirthSwitchBG
+Instance.new("UICorner", RebirthCircle).CornerRadius = UDim.new(1, 0)
+
+local isRebirthAutoActive = false
+local currentRebirthSelect = 0
+RebirthSwitchBG.MouseButton1Click:Connect(function()
+    if currentRebirthSelect > 0 then
+        isRebirthAutoActive = not isRebirthAutoActive
+        RebirthCircle:TweenPosition(isRebirthAutoActive and UDim2.new(1, -21, 0.5, -9) or UDim2.new(0, 3, 0.5, -9), "Out", "Quad", 0.2, true)
+        RebirthSwitchBG.BackgroundColor3 = isRebirthAutoActive and Color3.fromRGB(150, 150, 150) or Color3.fromRGB(40, 40, 40)
+    end
+end)
+
+local DropdownFrame = Instance.new("Frame")
+DropdownFrame.Size = UDim2.new(0.95, 0, 0, 240)
+DropdownFrame.Position = UDim2.new(0, 0, 0, 355)
+DropdownFrame.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+DropdownFrame.Visible = false
+DropdownFrame.ZIndex = 5
+DropdownFrame.Parent = MainContent
+Instance.new("UICorner", DropdownFrame).CornerRadius = UDim.new(0, 8)
+
+local DropdownList = Instance.new("UIListLayout")
+DropdownList.Parent = DropdownFrame
+DropdownList.SortOrder = Enum.SortOrder.LayoutOrder
+
+for i = 1, 8 do
+    local dropBtn = Instance.new("TextButton")
+    dropBtn.Size = UDim2.new(1, 0, 0, 30)
+    dropBtn.BackgroundTransparency = 1
+    dropBtn.Text = "Rebirth " .. i
+    dropBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    dropBtn.Font = Enum.Font.SourceSans
+    dropBtn.TextSize = 16
+    dropBtn.ZIndex = 6
+    dropBtn.Parent = DropdownFrame
+    dropBtn.MouseButton1Click:Connect(function()
+        currentRebirthSelect = i
+        RebirthLabelBtn.Text = "Rebirth Auto Brainrots: " .. i
+        DropdownFrame.Visible = false
+    end)
+end
+
+RebirthLabelBtn.MouseButton1Click:Connect(function()
+    DropdownFrame.Visible = not DropdownFrame.Visible
+end)
+table.insert(options["Farm"], RebirthContainer)
+
+local isAntiAFK = createOption("Anti AFK", 0, false, "Config")
+local isSpeedEnabled = createOption("Enable Speed", 1, false, "Config")
+local customSpeedVal = 16
+createSlider("Speed", 1, 300, 16, 2, "Config", function(val)
+    customSpeedVal = val
+end)
+
+createInfoBox("By: MORBEX", "Script created by this user.", 0, "Credits", false)
 createInfoBox("Discord", "My Discord server.", 1, "Credits", true, "https://discord.gg/bxZtRj892k")
 
 local function showTab(tabName)
-for _, v in pairs(options.Main) do v.Visible = (tabName == "Main") end
-for _, v in pairs(options.Buy) do v.Visible = (tabName == "Buy") end
-for _, v in pairs(options.Farm) do v.Visible = (tabName == "Farm") end
-for _, v in pairs(options.Credits) do v.Visible = (tabName == "Credits") end
+    for _, v in pairs(options.Main) do v.Visible = (tabName == "Main") end
+    for _, v in pairs(options.Buy) do v.Visible = (tabName == "Buy") end
+    for _, v in pairs(options.Farm) do v.Visible = (tabName == "Farm") end
+    for _, v in pairs(options.Config) do v.Visible = (tabName == "Config") end
+    for _, v in pairs(options.Credits) do v.Visible = (tabName == "Credits") end
+    DropdownFrame.Visible = false
 end
 
 TabMain.MouseButton1Click:Connect(function() showTab("Main") end)
 TabBuy.MouseButton1Click:Connect(function() showTab("Buy") end)
 TabFarm.MouseButton1Click:Connect(function() showTab("Farm") end)
+TabConfig.MouseButton1Click:Connect(function() showTab("Config") end)
 TabCredits.MouseButton1Click:Connect(function() showTab("Credits") end)
 
 local dragging, dragStart, startPos
 FloatingButton.InputBegan:Connect(function(input)
-if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-dragging = true
-dragStart = input.Position
-startPos = FloatingButton.Position
-end
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = FloatingButton.Position
+    end
 end)
 UserInputService.InputChanged:Connect(function(input)
-if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-local delta = input.Position - dragStart
-FloatingButton.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-end
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - dragStart
+        FloatingButton.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
 end)
 UserInputService.InputEnded:Connect(function() dragging = false end)
 FloatingButton.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
 CloseBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false end)
 
+Player.Idled:Connect(function()
+    if isAntiAFK() then
+        VirtualUser:CaptureController()
+        VirtualUser:ClickButton2(Vector2.new())
+    end
+end)
+
+RunService.Heartbeat:Connect(function()
+    local char = Player.Character
+    if char and char:FindFirstChild("Humanoid") then
+        if isSpeedEnabled() then
+            char.Humanoid.WalkSpeed = customSpeedVal
+        else
+            char.Humanoid.WalkSpeed = 16
+        end
+    end
+end)
+
 local brainrotsFolder = workspace:WaitForChild("Client", 10):WaitForChild("Path", 5):WaitForChild("Brainrots", 5)
 local targetHead = nil
 local isHidden = false
 
+local epicNames = {["Brr Brr Patapim"] = true, ["Rhino Toasterino"] = true, ["Brr Bicus Dicus"] = true, ["Strawberrelli Flamingelli"] = true, ["Bananito Delfinito"] = true, ["Balerina Capucina"] = true, ["Glorbo Fruttodrillo"] = true}
+local legendaryNames = {["Blueberrinni Octopusini"] = true, ["Chimpanzini Bananini"] = true, ["Bombardiro Crocodilo"] = true, ["Elefanto Cocofanto"] = true, ["Bombombini Gusini"] = true, ["Pandaccini Bananini"] = true, ["Chef Crabracadabra"] = true}
 local mythicNames = {["Gorillo Watermelondrillo"] = true, ["Frigo Camelo"] = true, ["Girafa Celestre"] = true, ["Ganganzelli Trulala"] = true, ["Tigroligre Frutonni"] = true}
 local secretNames = {["La Vacca Saturno Saturnita"] = true, ["Esok Sekolah"] = true, ["Tralaledon"] = true, ["Garama and Madundung"] = true}
-local stellarNames = {["Meowl"] = true, ["Capitano Clash Warnini"] = true, ["Strawberry Elephant"] = true}
-
-local function setVisibility(visible)
-local char = Player.Character
-if not char then return end
-local transparency = visible and 0 or 1
-for _, v in pairs(char:GetDescendants()) do
-if v:IsA("BasePart") or v:IsA("Decal") then
-if v.Name ~= "HumanoidRootPart" then v.Transparency = transparency end
-elseif v:IsA("BillboardGui") or v:IsA("SurfaceGui") then
-v.Enabled = visible
-end
-end
-isHidden = not visible
-end
-
-RunService.Heartbeat:Connect(function()
-local autoMystic = isAutoMystic()
-local autoSecret = isAutoSecret()
-local autoStellar = isAutoStellar()
-
-if not (autoMystic or autoSecret or autoStellar) then   
-    targetHead = nil   
-    if isHidden then setVisibility(true) end  
-    return   
-end  
-
-local char = Player.Character  
-local root = char and char:FindFirstChild("HumanoidRootPart")  
-if not root then return end  
-
-if targetHead and targetHead.Parent and targetHead.Parent.Parent == brainrotsFolder then  
-    root.CFrame = targetHead.CFrame  
-    if not isHidden then setVisibility(false) end  
-    return  
-end  
-
-targetHead = nil  
-if isHidden then setVisibility(true) end  
-
-for _, model in pairs(brainrotsFolder:GetChildren()) do  
-    if model:IsA("Model") then  
-        local ui = model:FindFirstChild("Brainrot_UI")  
-        local frame = ui and ui:FindFirstChild("Frame")  
-        local rarityLbl = frame and frame:FindFirstChild("Rarity")  
-        local titleLbl = frame and frame:FindFirstChild("Title")  
-        local head = model:FindFirstChild("Head")  
-
-        if head and frame then  
-            local isTarget = false  
-            local rarityText = rarityLbl and string.lower(rarityLbl.Text) or ""  
-            local titleText = titleLbl and titleLbl.Text or ""  
-
-            if autoMystic and (string.find(rarityText, "mythic") or mythicNames[titleText]) then  
-                isTarget = true  
-            elseif autoSecret and (string.find(rarityText, "secret") or secretNames[titleText]) then  
-                isTarget = true  
-            elseif autoStellar and (string.find(rarityText, "stellar") or stellarNames[titleText]) then  
-                isTarget = true  
-            end  
-
-            if isTarget then  
-                targetHead = head  
-                root.CFrame = head.CFrame  
-                break  
-            end  
-        end  
-    end  
-end
-
-end)
-
-task.spawn(function()
-local Bridge = ReplicatedStorage:WaitForChild("Remotes", 5):WaitForChild("Bridge")
-while task.wait(0.5) do
-if isAutoRebirth() then pcall(function() Bridge:FireServer("General", "Rebirth", "Use") end) end
-end
-end)
-
-task.spawn(function()
-local Bridge = ReplicatedStorage:WaitForChild("Remotes", 5):WaitForChild("Bridge")
-while task.wait(1) do
-if isAutoCollect() then
-pcall(function()
-for i = 1, 15 do Bridge:FireServer("General", "Brainrots", "Collect", "Slot" .. i) end
-end)
-end
-end
-end)
-
-task.spawn(function()
-while task.wait(1.5) do
-if isInstantBrainrot() then
-pcall(function()
-for _, obj in pairs(workspace:GetDescendants()) do
-if obj:IsA("ProximityPrompt") then obj.HoldDuration = 0 end
-end
-end)
-end
-end
-end)
-
-task.spawn(function()
-local blackListNames = {["SellPrompt"] = true, ["GrabPrompt"] = true, ["PlacePrompt"] = true, ["AddPrompt"] = true}
-while task.wait(0.1) do
-if isAutoBuyBrainrot() then
-pcall(function()
-local char = Player.Character
-if char and char:FindFirstChild("HumanoidRootPart") then
-local root = char.HumanoidRootPart
-for _, prompt in pairs(workspace:GetDescendants()) do
-if prompt:IsA("ProximityPrompt") and prompt.Enabled then
-if not blackListNames[prompt.Name] then
-local part = prompt.Parent
-local model = part and part:FindFirstAncestorOfClass("Model")
-local isMerchant = model and (model.Name == "IngredientsMerchant" or model.Name == "RobuxMerchant")
-if part and part:IsA("BasePart") and not isMerchant then
-local distance = (root.Position - part.Position).Magnitude
-if distance <= prompt.MaxActivationDistance then fireproximityprompt(prompt) end
-end
-end
-end
-end
-end
-end)
-end
-end
-end)
-
-task.spawn(function()
-while task.wait(1) do
-local espAtivo = isPlayerESP()
-for _, p in pairs(game.Players:GetPlayers()) do
-if p ~= Player then
-local char = p.Character
-if char then
-local highlight = char:FindFirstChild("PhantomESP")
-if espAtivo then
-if not highlight then
-highlight = Instance.new("Highlight")
-highlight.Name = "PhantomESP"
-highlight.FillColor = Color3.fromRGB(255, 0, 0)
-highlight.OutlineColor = Color3.fromRGB(255, 0, 0)
-highlight.FillTransparency = 0.5
-highlight.Parent = char
-end
-else
-if highlight then highlight:Destroy() end
-end
-end
-end
-end
-end
-end)
-
-RunService.Heartbeat:Connect(function()
-if isGodRagdoll() then
-local char = Player.Character
-if char and char:FindFirstChild("HumanoidRootPart") then
-local root = char.HumanoidRootPart
-if root:FindFirstChild("RagdollWeld") then root.RagdollWeld:Destroy() end
-for _, v in pairs(char:GetDescendants()) do
-if v:IsA("Motor6D") then v.Enabled = true end
-if v:IsA("BallSocketConstraint") or v:IsA("NoCollisionConstraint") then v:Destroy() end
-end
-end
-end
-end)
-
-local function isAnyBuyActive()
-return buyIce() or buyVic() or buyStar() or buyFlow() or buyPhon()
-end
-
-PlayerGui.Notification.DescendantAdded:Connect(function(descendant)
-local rebirthActive = isAutoRebirth()
-local ingredientsActive = isAnyBuyActive()
-if rebirthActive or ingredientsActive then
-if descendant:IsA("TextLabel") or descendant:IsA("Frame") or descendant.Name == "Template" or descendant.Name == "Value" then
-RunService.RenderStepped:Wait()
-local shouldDestroy = false
-local text = ""
-pcall(function()
-if descendant:IsA("TextLabel") then text = descendant.Text
-elseif descendant:FindFirstChild("Value") and descendant.Value:IsA("TextLabel") then text = descendant.Value.Text end
-end)
-if rebirthActive and (text:find("enough money") or text:find("necessary Brainrots")) then shouldDestroy = true end
-if ingredientsActive and not shouldDestroy then shouldDestroy = true end
-if shouldDestroy then descendant:Destroy() end
-end
-end
-end)
-
-local buyList = {
-{get = buyIce, name = "IceEmblem"},
-{get = buyVic, name = "Victrola"},
-{get = buyStar, name = "Star"},
-{get = buyFlow, name = "Flower"},
-{get = buyPhon, name = "Phone"}
-}
-
-task.spawn(function()
-local Bridge = ReplicatedStorage:WaitForChild("Remotes", 5):WaitForChild("Bridge")
-while task.wait(1) do
-if isAnyBuyActive() then
-pcall(function()
-for _, i 
+loca
