@@ -485,4 +485,226 @@ local epicNames = {["Brr Brr Patapim"] = true, ["Rhino Toasterino"] = true, ["Br
 local legendaryNames = {["Blueberrinni Octopusini"] = true, ["Chimpanzini Bananini"] = true, ["Bombardiro Crocodilo"] = true, ["Elefanto Cocofanto"] = true, ["Bombombini Gusini"] = true, ["Pandaccini Bananini"] = true, ["Chef Crabracadabra"] = true}
 local mythicNames = {["Gorillo Watermelondrillo"] = true, ["Frigo Camelo"] = true, ["Girafa Celestre"] = true, ["Ganganzelli Trulala"] = true, ["Tigroligre Frutonni"] = true}
 local secretNames = {["La Vacca Saturno Saturnita"] = true, ["Esok Sekolah"] = true, ["Tralaledon"] = true, ["Garama and Madundung"] = true}
-loca
+local stellarNames = {["Meowl"] = true, ["Capitano Clash Warnini"] = true, ["Strawberry Elephant"] = true}
+
+local rebirthTargets = {
+    [1] = {["Pipi Potato"] = true, ["Burbaloni Loliloli"] = true},
+    [2] = {["Tung Tung Sahur"] = true, ["Cappuccino Assassino"] = true},
+    [3] = {["Pipi Kiwi"] = true, ["Orangutini Ananassini"] = true},
+    [4] = {["Brr Bicus Dicus"] = true, ["Rhino Toasterino"] = true},
+    [5] = {["Bombardiro Crocodilo"] = true, ["Bombombini Gusini"] = true},
+    [6] = {["Elefanto Cocofanto"] = true, ["Pandaccini Bananini"] = true},
+    [7] = {["Frigo Camelo"] = true, ["Tigroligre Frutonni"] = true},
+    [8] = {["La Vacca Saturno Saturnita"] = true, ["Tralaledon"] = true}
+}
+
+local function setVisibility(visible)
+    local char = Player.Character
+    if not char then return end
+    local transparency = visible and 0 or 1
+    for _, v in pairs(char:GetDescendants()) do
+        if v:IsA("BasePart") or v:IsA("Decal") then
+            if v.Name ~= "HumanoidRootPart" then v.Transparency = transparency end
+        elseif v:IsA("BillboardGui") or v:IsA("SurfaceGui") then
+            v.Enabled = visible
+        end
+    end
+    isHidden = not visible
+end
+
+RunService.Heartbeat:Connect(function()
+    local autoEpic = isAutoEpic()
+    local autoLegendary = isAutoLegendary()
+    local autoMystic = isAutoMystic()
+    local autoSecret = isAutoSecret()
+    local autoStellar = isAutoStellar()
+    local rActive = isRebirthAutoActive and currentRebirthSelect > 0
+
+    if not (autoEpic or autoLegendary or autoMystic or autoSecret or autoStellar or rActive) then 
+        targetHead = nil 
+        if isHidden then setVisibility(true) end
+        return 
+    end
+
+    local char = Player.Character
+    local root = char and char:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+
+    if targetHead and targetHead.Parent and targetHead.Parent.Parent == brainrotsFolder then
+        root.CFrame = targetHead.CFrame
+        if not isHidden then setVisibility(false) end
+        return
+    end
+
+    targetHead = nil
+    if isHidden then setVisibility(true) end
+
+    for _, model in pairs(brainrotsFolder:GetChildren()) do
+        if model:IsA("Model") then
+            local ui = model:FindFirstChild("Brainrot_UI")
+            local frame = ui and ui:FindFirstChild("Frame")
+            local rarityLbl = frame and frame:FindFirstChild("Rarity")
+            local titleLbl = frame and frame:FindFirstChild("Title")
+            local head = model:FindFirstChild("Head")
+
+            if head and frame then
+                local isTarget = false
+                local rarityText = rarityLbl and string.lower(rarityLbl.Text) or ""
+                local titleText = titleLbl and titleLbl.Text or ""
+
+                if autoEpic and (string.find(rarityText, "epic") or epicNames[titleText]) then isTarget = true
+                elseif autoLegendary and (string.find(rarityText, "legendary") or legendaryNames[titleText]) then isTarget = true
+                elseif autoMystic and (string.find(rarityText, "mythic") or mythicNames[titleText]) then isTarget = true
+                elseif autoSecret and (string.find(rarityText, "secret") or secretNames[titleText]) then isTarget = true
+                elseif autoStellar and (string.find(rarityText, "stellar") or stellarNames[titleText]) then isTarget = true
+                elseif rActive and rebirthTargets[currentRebirthSelect] and rebirthTargets[currentRebirthSelect][titleText] then isTarget = true
+                end
+
+                if isTarget then
+                    targetHead = head
+                    root.CFrame = head.CFrame
+                    break
+                end
+            end
+        end
+    end
+end)
+task.spawn(function()
+    local Bridge = ReplicatedStorage:WaitForChild("Remotes", 5):WaitForChild("Bridge")
+    while task.wait(0.5) do
+        if isAutoRebirth() then pcall(function() Bridge:FireServer("General", "Rebirth", "Use") end) end
+    end
+end)
+
+task.spawn(function()
+    local Bridge = ReplicatedStorage:WaitForChild("Remotes", 5):WaitForChild("Bridge")
+    while task.wait(1) do
+        if isAutoCollect() then
+            pcall(function()
+                for i = 1, 15 do Bridge:FireServer("General", "Brainrots", "Collect", "Slot" .. i) end
+            end)
+        end
+    end
+end)
+
+task.spawn(function()
+    while task.wait(1.5) do
+        if isInstantBrainrot() then
+            pcall(function()
+                for _, obj in pairs(workspace:GetDescendants()) do
+                    if obj:IsA("ProximityPrompt") then obj.HoldDuration = 0 end
+                end
+            end)
+        end
+    end
+end)
+
+task.spawn(function()
+    local blackListNames = {["SellPrompt"] = true, ["GrabPrompt"] = true, ["PlacePrompt"] = true, ["AddPrompt"] = true}
+    while task.wait(0.1) do
+        if isAutoBuyBrainrot() then
+            pcall(function()
+                local char = Player.Character
+                if char and char:FindFirstChild("HumanoidRootPart") then
+                    local root = char.HumanoidRootPart
+                    for _, prompt in pairs(workspace:GetDescendants()) do
+                        if prompt:IsA("ProximityPrompt") and prompt.Enabled then
+                            if not blackListNames[prompt.Name] then
+                                local part = prompt.Parent
+                                local model = part and part:FindFirstAncestorOfClass("Model")
+                                local isMerchant = model and (model.Name == "IngredientsMerchant" or model.Name == "RobuxMerchant")
+                                if part and part:IsA("BasePart") and not isMerchant then
+                                    local distance = (root.Position - part.Position).Magnitude
+                                    if distance <= prompt.MaxActivationDistance then fireproximityprompt(prompt) end
+                                end
+                            end
+                        end
+                    end
+                end
+            end)
+        end
+    end
+end)
+
+task.spawn(function()
+    while task.wait(1) do
+        local espAtivo = isPlayerESP()
+        for _, p in pairs(game.Players:GetPlayers()) do
+            if p ~= Player then
+                local char = p.Character
+                if char then
+                    local highlight = char:FindFirstChild("PhantomESP")
+                    if espAtivo then
+                        if not highlight then
+                            highlight = Instance.new("Highlight")
+                            highlight.Name = "PhantomESP"
+                            highlight.FillColor = Color3.fromRGB(255, 0, 0)
+                            highlight.OutlineColor = Color3.fromRGB(255, 0, 0)
+                            highlight.FillTransparency = 0.5
+                            highlight.Parent = char
+                        end
+                    else
+                        if highlight then highlight:Destroy() end
+                    end
+                end
+            end
+        end
+    end
+end)
+
+RunService.Heartbeat:Connect(function()
+    if isGodRagdoll() then
+        local char = Player.Character
+        if char and char:FindFirstChild("HumanoidRootPart") then
+            local root = char.HumanoidRootPart
+            if root:FindFirstChild("RagdollWeld") then root.RagdollWeld:Destroy() end
+            for _, v in pairs(char:GetDescendants()) do
+                if v:IsA("Motor6D") then v.Enabled = true end
+                if v:IsA("BallSocketConstraint") or v:IsA("NoCollisionConstraint") then v:Destroy() end
+            end
+        end
+    end
+end)
+
+local function isAnyBuyActive()
+    return buyIce() or buyVic() or buyStar() or buyFlow() or buyPhon()
+end
+
+PlayerGui.Notification.DescendantAdded:Connect(function(descendant)
+    local rebirthActive = isAutoRebirth()
+    local ingredientsActive = isAnyBuyActive()
+    if rebirthActive or ingredientsActive then
+        if descendant:IsA("TextLabel") or descendant:IsA("Frame") or descendant.Name == "Template" or descendant.Name == "Value" then
+            RunService.RenderStepped:Wait()
+            local shouldDestroy = false
+            local text = ""
+            pcall(function()
+                if descendant:IsA("TextLabel") then text = descendant.Text
+                elseif descendant:FindFirstChild("Value") and descendant.Value:IsA("TextLabel") then text = descendant.Value.Text end
+            end)
+            if rebirthActive and (text:find("enough money") or text:find("necessary Brainrots")) then shouldDestroy = true end
+            if ingredientsActive and not shouldDestroy then shouldDestroy = true end
+            if shouldDestroy then descendant:Destroy() end
+        end
+    end
+end)
+local buyList = {
+    {get = buyIce, name = "IceEmblem"},
+    {get = buyVic, name = "Victrola"},
+    {get = buyStar, name = "Star"},
+    {get = buyFlow, name = "Flower"},
+    {get = buyPhon, name = "Phone"}
+}
+
+task.spawn(function()
+    local Bridge = ReplicatedStorage:WaitForChild("Remotes", 5):WaitForChild("Bridge")
+    while task.wait(1) do
+        if isAnyBuyActive() then
+            pcall(function()
+                for _, item in ipairs(buyList) do
+                    if item.get() then Bridge:FireServer("General", "Ingredients", "Purchase", item.name) end
+                end
+            end)
+        end
+    end
+end)
