@@ -330,7 +330,7 @@ local buyVic = createOption("Auto Victrola", 1, false, "Buy")
 local buyStar = createOption("Auto Star", 2, false, "Buy")
 local buyFlow = createOption("Auto Flower", 3, false, "Buy")
 local buyPhon = createOption("Auto Phone", 4, false, "Buy")
-local buyPhon = create0ption("Auto Taco", 5, false, "Buy")
+local buyTac = create0ption("Auto Taco", 5, false, "Buy")
 
 local isAutoEpic = createOption("Auto Epic", 0, false, "Farm")
 local isAutoLegendary = createOption("Auto Legendary", 1, false, "Farm")
